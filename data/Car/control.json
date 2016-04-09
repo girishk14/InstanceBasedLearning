@@ -1,0 +1,23 @@
+{
+ "class_name": "Car Acceptability", 
+ "class_position": 6, 
+ "location": [
+  "data/Car/car.data"
+ ], 
+ "attr_names": [
+  "buying", 
+  "maint", 
+  "doors", 
+  "persons", 
+  "lug_boot", 
+  "safety"
+ ], 
+ "attr_types": [
+  "d", 
+  "d", 
+  "d", 
+  "d", 
+  "d", 
+  "d"
+ ]
+}

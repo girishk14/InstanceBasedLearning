@@ -1,0 +1,30 @@
+{
+ "attr_types": [
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c"
+ ], 
+ "class_name": "Tumor", 
+ "class_position": 9, 
+ "location": [
+  "data/BreastCancer/breast_cancer.data"
+ ], 
+ "attr_names": [
+  "Clump Thickness", 
+  "Uniformity of Cell Shape", 
+  "Uniformity of Cell Size", 
+  "Marginal Adhesion", 
+  "Single Epithelial Cell Size", 
+  "Bare Nuclei", 
+  "Bland Chromatin", 
+  "Normal Nucleoli", 
+  "Mitoses"
+ ], 
+ "c_split_limit": 2
+}

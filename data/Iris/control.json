@@ -1,0 +1,20 @@
+{
+ "attr_types": [
+  "c", 
+  "c", 
+  "c", 
+  "c"
+ ], 
+ "class_name": "Class", 
+ "class_position": 4, 
+ "location": [
+  "data/Iris/iris.data"
+ ], 
+ "attr_names": [
+  "Sepal Length", 
+  "Sepal Width", 
+  "Petal Length", 
+  "Petal Width"
+ ], 
+ "c_split_limit": 2
+}

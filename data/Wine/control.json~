@@ -1,0 +1,21 @@
+{
+"attr_types": [
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c",
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c"], 
+ "location": ["data/Wine/wine.data"],
+ "attr_names": ["Alcohol", "Malic Acid", "Ash", "Alcalinity of Ash", "Magnesium", "Total Phenols", "Flavanoids", "Nonflavanoid Phenols", "Proanthocyanins", "Color Intensity", "Hue", "0D280/0D315", "Proline"], 
+ "c_split_limit": 2,
+ "class_name": "Class", 
+ "class_position": 0
+}

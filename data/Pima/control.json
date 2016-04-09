@@ -1,0 +1,28 @@
+{
+ "attr_types": [
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c"
+ ], 
+ "class_name": "Class", 
+ "class_position": 8, 
+ "location": [
+  "data/Pima/diabetes.data"
+ ], 
+ "attr_names": [
+  "Number of times pregnant", 
+  "Plasma glucose concentration a 2 hours in an oral glucose tolerance test", 
+  "Diastolic blood pressure (mm Hg)", 
+  "Triceps skin fold thickness (mm)", 
+  "2-Hour serum insulin (mu U/ml)", 
+  "Body mass index (weight in kg/(height in m)^2)", 
+  "Diabetes pedigree function", 
+  "Age (years) "
+ ], 
+ "c_split_limit": 2
+}
