@@ -18,6 +18,8 @@ def run_neural_network(splits, neural_spec, learning_rate, momentum_rate):
 def train_neural(neural_net, trainX, trainY, validX, validY):
 	epoch_size = len(validX)
 
+	print(trainX, trainY)
+
 	for iteration in range(0, 20000):
 		random_idx = numpy.random.randint(0, len(trainX))
 		neural_net.feedForward(trainX[random_idx])

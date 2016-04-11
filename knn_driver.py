@@ -36,6 +36,8 @@ def run_knn_naive(splits, k):
 		
 		if testY[idx] == pred:
 			correct+=1
+
+	print(float(correct)/len(testX))
 	return (float(correct)/len(testX))
 
 
@@ -58,6 +60,7 @@ def classify_tuple_naive(query, trainX, trainY, k):
 
 	#print(votes)
 	predicted_class = max(votes.iteritems(), key=operator.itemgetter(1))[0]
+
 	return predicted_class
 
 
@@ -69,7 +72,9 @@ def run_knn_distance_weight(splits, k):
 		
 		if testY[idx] == pred:
 			correct+=1
+
 	print(float(correct)/len(testX))
+	return (float(correct)/len(testX))
 
 
 
@@ -108,6 +113,7 @@ def run_knn_KD(splits, k):
 
 
 	print(float(correct)/len(testX))
+	return (float(correct)/len(testX))
 
 
 def classify_tuple_KDTree(KD, query, trainY, k):
@@ -131,57 +137,103 @@ def classify_tuple_KDTree(KD, query, trainY, k):
 def run_knn_SVD(splits, k):
 	(trainX,trainY, validX,validY, testX, testY) = splits
 	correct = 0
-
-	print(trainX)
+	print("Factorizing trainX")
 	trainX_svd = numpy.linalg.svd(trainX, full_matrices=False)
 
-
-	validX_svd = numpy.linalg.svd(numpy.concatenate((trainX, validX),axis=0), full_matrices=False)
-	
+	print("Factorizing validX and testX")
+	validX_svd = numpy.linalg.svd(numpy.concatenate((trainX, validX),axis=0), full_matrices=False)	
 	testX_svd = numpy.linalg.svd(numpy.concatenate((trainX, testX),axis=0), full_matrices=False)
-
-
 	dimensions = find_svd_dimensions(trainX_svd, trainY, validX_svd, validY, k)
+	accuracy = test_knn_SVD(trainX_svd, trainY, testX_svd, testY, k, dimensions)
+	print("Final Acc  = ", accuracy)
+	return accuracy
+	#sys.exit()
 
+
+def test_knn_SVD(trainX_svd, trainY, testX_svd, testY, k, dim):
+	u1, s1, v1 = trainX_svd
+	u2 ,s2,v2 = testX_svd[0], testX_svd[1], testX_svd[2]
+
+	print(u2.shape, s2.shape, v2.shape)
+
+	cs1, cs2 = copy.deepcopy(s1), copy.deepcopy(s2)
+	correct = 0
+	cs1[dim:] , cs2[dim:]  = 0, 0
+	train_recon = (numpy.dot(u1, numpy.diag(s1)))[:,:dim]
+
+	test_recon = (numpy.dot(u2, numpy.diag(s2)))[len(trainY):,:dim]
+
+	print(train_recon.shape, test_recon.shape)
+	raw_input()
+
+	for idx, query in enumerate(test_recon):
+		pred_class = classify_tuple_naive(query, train_recon, trainY, k)
+		if pred_class == testY[idx]:
+			correct +=1
+
+	accuracy = float(correct)/len(testY)
+	return accuracy
 
 def find_svd_dimensions(trainX, trainY, validX, validY, k):
-	u1, s1, v1 = trainX
-	u2, s2, v2 = validX[0][len(trainY):], validX[1], validX[2]
-
+	dims = len(trainX[1])
 	accuracies = {}
+	for i in range(1, dims+1):
+		accuracies[i] = test_knn_SVD(trainX, trainY, validX, validY, k, i)
+		print(accuracies)
+	return max(accuracies.iteritems(), key=operator.itemgetter(1))[0]
 
 
-	for i in range(2, len(u1[0])+1):
-		print("Folding into %d dimensions"%i)
 
-		cs1, cs2 = copy.deepcopy(s1), copy.deepcopy(s2)
 
-		cs1[i:] = 0
-		cs2[i:] = 0
-		train_recon = (numpy.dot(u1, numpy.diag(cs1)))[:,:i]
 
-		for idx,ex in enumerate(train_recon):
-			plt.text(ex[0], ex[1], trainY[idx])
 
-		plt.show()
+def run_knn_feature_selection(splits, k):
+	(trainX,trainY, validX,validY, testX, testY) = splits	
 
-		valid_reconn = (numpy.dot(u2, numpy.diag(cs2)))[:,:i]
-		correct = 0
+	sel_set = set()
+	features_left = set(xrange(0, len(trainX[0])))
 
-		for idx,query in enumerate(valid_reconn): 
-			pred_class = classify_tuple_naive(query, train_recon, trainY, k)
+	prev_acc = 0
 
-			if pred_class == validY[idx]:
-				correct +=1
+#To identify the best features
+	while True:
+		acc_on_valid_set = {}
+		for x in features_left:
+			try_set = sel_set.union(set([x]))
 
-		accuracies[i] = float(correct)/len(validY)
-		return max()
+			acc_on_valid_set[x] = classify_on_select_features(trainX, trainY, validX, validY, try_set, k)
 
+		print(acc_on_valid_set)
+		best_feature = max(acc_on_valid_set.iteritems(), key=operator.itemgetter(1))[0]
+		if acc_on_valid_set[best_feature] > prev_acc:
+			sel_set.add(best_feature);
+			print(sel_set)
+			features_left.remove(best_feature)
+			prev_acc = acc_on_valid_set[best_feature]
+
+		else:
+			break
+
+
+	print("Best featuers are :", sel_set)
+	acc = classify_on_select_features(trainX, trainY, testX, testY, sel_set, k)
+	print(acc)
+	return acc
+
+def classify_on_select_features(trainX, trainY, testX, testY, feature_set, k):
+	
+	trainX = trainX[:, list(feature_set)]
+	testX = testX[:, list(feature_set)]
+ 
+	correct = 0
+	for idx,query in enumerate(testX):
+		pred = classify_tuple_naive(query,trainX,trainY, k)
 		
-	print(accuracies)
-		
+		if testY[idx] == pred:
+			correct+=1
 
-	sys.exit()
+	return (float(correct)/len(testX))
+
 
 
 

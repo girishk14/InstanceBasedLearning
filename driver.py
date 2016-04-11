@@ -30,6 +30,7 @@ def main():
 
 	normalized_ip, normalized_op = preprocess.normalize(ip, op, metadata);
 
+
 	knn_ip, knn_op = preprocess.normalize(ip, op, metadata, hot_encode = True)
 	#neural_spec = [int(spec.strip()) for spec in sys.argv[2].split(",")]
 	neural_spec = [4,5]
@@ -59,14 +60,14 @@ def main():
 	print("Average Number of Iterations for Neural Network : %.3f"%(mean_iter))
 	print("Average of Mean Squared Error for Neural Network : %.2f"%(mse))
 	
-	print("\nFold\t\t\tNeural Network\t\t\tDecision Tree")
+	print("\nFold\t\t\tkNN\t\t\tDecision Tree")
 	for fold in range(0,10):
-			print( "%d \t\t\t %.2f \t\t\t %.2f"%(fold+1, neural_accs[fold], dtree_accs[fold]))
+			print( "%d \t\t\t %.2f \t\t\t %.2f"%(fold+1, knn_accs[fold], dtree_accs[fold]))
 
 	dtree_mu, dtree_ci = statistics.calc_confidence_interval(dtree_accs)
-	neural_mu, neural_ci = statistics.calc_confidence_interval(neural_accs)
+	neural_mu, neural_ci = statistics.calc_confidence_interval(knn_accs)
 
-	t_mu, t_ci = statistics.paired_t_test(dtree_accs, neural_accs)
+	t_mu, t_ci = statistics.paired_t_test(dtree_accs, knn_accs)
 
 	print("\nConfidence interval for neural network : %.3f   +/-   %.3f"%(neural_mu, neural_ci))
 	print("Confidence interval for decison tree : %.3f   +/-   %.3f"%(dtree_mu, dtree_ci))
@@ -79,6 +80,8 @@ def main():
 
 	else:
 		print("The difference in the performance of the two algorithms is statistically significant")
+
+
 
 
 def k_fold_generator(X, y, k_fold):
@@ -118,18 +121,41 @@ def k_fold_validation_dtree(ip, op, metadata):
 	return accs
 
 
+def downsample(trainX, trainY):
+	
+	sample_size = math.sqrt(len(trainX))#int(len(trainX))*0.2
+
+	a = numpy.random.choice(numpy.arange(0, len(trainX)), size = sample_size)
+	T_x = numpy.zeros((sample_size, len(trainX[0])))
+	T_y = []
+	i = 0
+
+	for idx in a:
+		T_x[i]= trainX[idx]
+		T_y.append(trainY[idx])
+		i+=1
+
+	print(len(T_x), len(T_y))
+	return T_x, T_y
+
+
+
 
 def k_fold_validation_knn(knn_ip, knn_op, k, metadata):
 	print("Evaluating KNN . . .")
 	accs = []
 	for trainX, trainY,testX, testY in k_fold_generator(knn_ip.tolist(), knn_op.tolist(), 10):
 		print("Fold " + str(len(accs)+1))
+
+		if len(trainX[0]) > 25 and len(trainX)>500: #more than 25 features
+			print("Too much data, downsampling")
+			trainX, trainY = downsample(trainX, trainY)
+
 		t_size = int((7/9.0) * len(trainX))
 		splits = (numpy.array(trainX[0:t_size]), numpy.array(trainY[0:t_size]), numpy.array(trainX[t_size:]), numpy.array(trainY[t_size:]), numpy.array(testX), numpy.array(testY))
-		
-
 		acc  =  knn_driver.run_knn(splits,k, sys.argv[3])
 		accs.append(acc)
+		sys.exit()
 	return accs
 
 

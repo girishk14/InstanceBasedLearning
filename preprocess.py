@@ -73,7 +73,13 @@ def normalize(dataset, labels, metadata, hot_encode=True):
 	for attr in range(0,metadata['no_attrs']):
 		if metadata['attr_types'][attr] ==  'c':
 			attr_values = [tup[attr] for tup in dataset]
-			normalized_column =  (numpy.array(attr_values)  - numpy.mean(attr_values))/numpy.std(attr_values)
+			#print(numpy.std(attr_values))
+
+			if numpy.std(attr_values) != 0:
+				normalized_column =  (numpy.array(attr_values)  - numpy.mean(attr_values))/numpy.std(attr_values)
+
+			else:
+				normalized_column =  numpy.array(attr_values)  - numpy.mean(attr_values)
 
 			for i,tup in enumerate(neural_input):
 				tup.append(normalized_column[i])

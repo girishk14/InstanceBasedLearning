@@ -1,0 +1,49 @@
+{
+ "class_name": "Class", 
+ "class_position": 0, 
+ "location": [
+  "data/Image/seg.data"
+ ], 
+ "attr_names": [
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A"
+ ], 
+ "attr_types": [
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c"
+ ]
+}
