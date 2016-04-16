@@ -1,0 +1,43 @@
+{
+ "class_name": "Class", 
+ "class_position": 0, 
+ "location": [
+  "data/Voting/house-votes-84.data"
+ ], 
+ "attr_names": [
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A"
+ ], 
+ "attr_types": [
+  "d", 
+  "d", 
+  "d", 
+  "d", 
+  "d", 
+  "d", 
+  "d", 
+  "d", 
+  "d", 
+  "d", 
+  "d", 
+  "d", 
+  "d", 
+  "d", 
+  "d", 
+  "d"
+ ]
+}

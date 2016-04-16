@@ -153,9 +153,6 @@ def run_knn_SVD(splits, k):
 def test_knn_SVD(trainX_svd, trainY, testX_svd, testY, k, dim):
 	u1, s1, v1 = trainX_svd
 	u2 ,s2,v2 = testX_svd[0], testX_svd[1], testX_svd[2]
-
-	print(u2.shape, s2.shape, v2.shape)
-
 	cs1, cs2 = copy.deepcopy(s1), copy.deepcopy(s2)
 	correct = 0
 	cs1[dim:] , cs2[dim:]  = 0, 0
@@ -163,8 +160,6 @@ def test_knn_SVD(trainX_svd, trainY, testX_svd, testY, k, dim):
 
 	test_recon = (numpy.dot(u2, numpy.diag(s2)))[len(trainY):,:dim]
 
-	print(train_recon.shape, test_recon.shape)
-	raw_input()
 
 	for idx, query in enumerate(test_recon):
 		pred_class = classify_tuple_naive(query, train_recon, trainY, k)
