@@ -26,6 +26,8 @@ def run_knn(splits, k, method):
 	if method == "Feature_Selection":
 		return run_knn_feature_selection(splits, k)
 
+	if method == "Relief":
+		return run_knn_relief(splits, k)
 
 
 def run_knn_naive(splits, k):
@@ -99,7 +101,6 @@ def classify_tuple_distance(query, trainX, trainY, k):
 
 
 
-
 def run_knn_KD(splits, k):
 	(trainX,trainY, validX,validY, testX, testY) = splits
 	correct = 0
@@ -137,46 +138,55 @@ def classify_tuple_KDTree(KD, query, trainY, k):
 def run_knn_SVD(splits, k):
 	(trainX,trainY, validX,validY, testX, testY) = splits
 	correct = 0
-	print("Factorizing trainX")
-	trainX_svd = numpy.linalg.svd(trainX, full_matrices=False)
+	trainX = numpy.concatenate((trainX, validX), axis=0)
+	trainY = numpy.concatenate((trainY, validY), axis =0)
 
-	print("Factorizing validX and testX")
-	validX_svd = numpy.linalg.svd(numpy.concatenate((trainX, validX),axis=0), full_matrices=False)	
-	testX_svd = numpy.linalg.svd(numpy.concatenate((trainX, testX),axis=0), full_matrices=False)
-	dimensions = find_svd_dimensions(trainX_svd, trainY, validX_svd, validY, k)
-	accuracy = test_knn_SVD(trainX_svd, trainY, testX_svd, testY, k, dimensions)
+
+	train_U, train_S, train_Vt = numpy.linalg.svd(trainX, full_matrices=False)
+	test_U, test_S, test_Vt = numpy.linalg.svd(numpy.concatenate((trainX, testX),axis=0), full_matrices=False)
+	dimensions = find_svd_dimensions((train_U, train_S, train_Vt))
+	print(dimensions)
+	print(train_U.shape, train_S.shape, train_Vt.shape)
+	
+	train_recon = numpy.dot(numpy.dot(train_U[:, :dimensions], numpy.diag(train_S[:dimensions])), train_Vt[:dimensions, :])
+
+	test_recon = numpy.dot(numpy.dot(test_U[:, :dimensions], numpy.diag(test_S[:dimensions])), test_Vt[:dimensions, :])
+
+	test_recon =  test_recon[len(trainX):]
+
+
+	if "--showplot" in sys.argv:
+		for eg in range(0, len(trainX)):
+			plt.text(train_U[eg,0], train_U[eg,1], trainY[eg])
+
+		plt.show()
+
+
+	accuracy = test_knn_SVD(train_recon, trainY, test_recon, testY, k)
 	print("Final Acc  = ", accuracy)
 	return accuracy
-	#sys.exit()
 
+def test_knn_SVD(trainX_svd, trainY, testX_svd, testY, k):
 
-def test_knn_SVD(trainX_svd, trainY, testX_svd, testY, k, dim):
-	u1, s1, v1 = trainX_svd
-	u2 ,s2,v2 = testX_svd[0], testX_svd[1], testX_svd[2]
-	cs1, cs2 = copy.deepcopy(s1), copy.deepcopy(s2)
-	correct = 0
-	cs1[dim:] , cs2[dim:]  = 0, 0
-	train_recon = (numpy.dot(u1, numpy.diag(s1)))[:,:dim]
-
-	test_recon = (numpy.dot(u2, numpy.diag(s2)))[len(trainY):,:dim]
-
-
-	for idx, query in enumerate(test_recon):
-		pred_class = classify_tuple_naive(query, train_recon, trainY, k)
+	correct = 0 
+	for idx, query in enumerate(testX_svd):
+		pred_class = classify_tuple_naive(query, trainX_svd, trainY, k)
 		if pred_class == testY[idx]:
 			correct +=1
 
 	accuracy = float(correct)/len(testY)
 	return accuracy
 
-def find_svd_dimensions(trainX, trainY, validX, validY, k):
-	dims = len(trainX[1])
-	accuracies = {}
-	for i in range(1, dims+1):
-		accuracies[i] = test_knn_SVD(trainX, trainY, validX, validY, k, i)
-		print(accuracies)
-	return max(accuracies.iteritems(), key=operator.itemgetter(1))[0]
-
+def find_svd_dimensions(trainX_svd):
+	U, S, V_t = trainX_svd
+	e_sum = 0 
+	red_sum = 0
+	for eigen_val in S:
+		e_sum += (eigen_val**2)
+	for idx, eigen_val in enumerate(S):
+		red_sum += (eigen_val**2)
+		if red_sum > 0.9 * e_sum:
+			return (idx + 1)
 
 
 
@@ -228,6 +238,58 @@ def classify_on_select_features(trainX, trainY, testX, testY, feature_set, k):
 			correct+=1
 
 	return (float(correct)/len(testX))
+
+
+
+def run_knn_relief(splits, k):
+
+	(trainX,trainY, validX,validY, testX, testY) = splits
+	trainX = numpy.concatenate((trainX, validX))
+	trainY = numpy.concatenate((trainY, validY))
+	weight_vector = [0] * len(trainX[0])
+
+	print(len(trainX))
+
+	for i in range(0, len(trainX)):
+		idx = random.randint(0 , len(trainX)-1)
+		near_hit= find_nearest_neighbour(trainX, trainY, idx, True)
+		near_miss= find_nearest_neighbour(trainX, trainY, idx, False)
+
+		for feature in range(0, len(trainX[0])):
+			hit_diff = trainX[near_hit][feature]
+			miss_diff = trainX[near_miss][feature]
+			ex = trainX[idx][feature]
+
+			#print(ex, hit_diff, miss_diff)
+
+			weight_vector[feature] = weight_vector[feature] - (ex - hit_diff)**2  + (ex -  miss_diff)**2
+
+	weight_vector = [w/len(trainX) for w in weight_vector]
+
+
+	correct = 0
+	print(trainX[0])
+	trainX = trainX * numpy.array(weight_vector)
+	print(trainX[0])
+	for idx,query in enumerate(testX):
+		pred = classify_tuple_naive(query*weight_vector, trainX,trainY, k)
+		
+		if testY[idx] == pred:
+			correct+=1
+
+	print(float(correct)/len(testX))
+
+
+
+
+def find_nearest_neighbour(trainX, trainY, choice_idx,  hit_or_miss):
+	dist = {}
+	for i,example in enumerate(trainX):
+		if  i!=choice_idx and ((trainY[choice_idx] ==trainY[i])==hit_or_miss):
+			dist[i] = numpy.linalg.norm(trainX[i] - trainX[choice_idx])
+	return min(dist.iteritems(), key=operator.itemgetter(1))[0]
+
+
 
 
 
