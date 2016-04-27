@@ -20,7 +20,7 @@ def run_knn(splits, k, method):
 	if method == "KDTree":
 		return run_knn_KD(splits, k)
 
-	if method == "Distance_Weight":
+	if method == "Distance_Weighted":
 		return run_knn_distance_weight(splits, k)
 
 	if method == "Feature_Selection":
@@ -39,7 +39,6 @@ def run_knn_naive(splits, k):
 		if testY[idx] == pred:
 			correct+=1
 
-	print(float(correct)/len(testX))
 	return (float(correct)/len(testX))
 
 
@@ -59,8 +58,6 @@ def classify_tuple_naive(query, trainX, trainY, k):
 			votes[trainY[neighbour]] = 1	
 		else:
 			votes[trainY[neighbour]]+=1
-
-	#print(votes)
 	predicted_class = max(votes.iteritems(), key=operator.itemgetter(1))[0]
 
 	return predicted_class
@@ -74,8 +71,6 @@ def run_knn_distance_weight(splits, k):
 		
 		if testY[idx] == pred:
 			correct+=1
-
-	print(float(correct)/len(testX))
 	return (float(correct)/len(testX))
 
 
@@ -91,9 +86,9 @@ def classify_tuple_distance(query, trainX, trainY, k):
 	votes = {}
 	for neighbour in knns:
 		if trainY[neighbour] not in votes:
-			votes[trainY[neighbour]] = (1/(dist[neighbour]**2)) * 1	
+			votes[trainY[neighbour]] = (1/(dist[neighbour]**2)) 	
 		else:
-			votes[trainY[neighbour]]+= (1/(dist[neighbour]**2)) * 1
+			votes[trainY[neighbour]]+= (1/(dist[neighbour]**2)) 
 
 	predicted_class = max(votes.iteritems(), key=operator.itemgetter(1))[0]
 	return predicted_class
@@ -111,7 +106,6 @@ def run_knn_KD(splits, k):
 
 		if testY[idx] == pred:
 			correct+=1
-
 
 	print(float(correct)/len(testX))
 	return (float(correct)/len(testX))
@@ -163,7 +157,6 @@ def run_knn_SVD(splits, k):
 
 
 	accuracy = test_knn_SVD(train_recon, trainY, test_recon, testY, k)
-	print("Final Acc  = ", accuracy)
 	return accuracy
 
 def test_knn_SVD(trainX_svd, trainY, testX_svd, testY, k):
@@ -219,10 +212,7 @@ def run_knn_feature_selection(splits, k):
 		else:
 			break
 
-
-	print("Best featuers are :", sel_set)
 	acc = classify_on_select_features(trainX, trainY, testX, testY, sel_set, k)
-	print(acc)
 	return acc
 
 def classify_on_select_features(trainX, trainY, testX, testY, feature_set, k):
@@ -260,24 +250,22 @@ def run_knn_relief(splits, k):
 			miss_diff = trainX[near_miss][feature]
 			ex = trainX[idx][feature]
 
-			#print(ex, hit_diff, miss_diff)
-
+	
 			weight_vector[feature] = weight_vector[feature] - (ex - hit_diff)**2  + (ex -  miss_diff)**2
 
 	weight_vector = [w/len(trainX) for w in weight_vector]
 
 
 	correct = 0
-	print(trainX[0])
 	trainX = trainX * numpy.array(weight_vector)
-	print(trainX[0])
+	
 	for idx,query in enumerate(testX):
 		pred = classify_tuple_naive(query*weight_vector, trainX,trainY, k)
 		
 		if testY[idx] == pred:
 			correct+=1
 
-	print(float(correct)/len(testX))
+	return(float(correct)/len(testX))
 
 
 
@@ -285,7 +273,7 @@ def run_knn_relief(splits, k):
 def find_nearest_neighbour(trainX, trainY, choice_idx,  hit_or_miss):
 	dist = {}
 	for i,example in enumerate(trainX):
-		if  i!=choice_idx and ((trainY[choice_idx] ==trainY[i])==hit_or_miss):
+		if  i!=choice_idx and ((trainY[choice_idx] == trainY[i])==hit_or_miss):
 			dist[i] = numpy.linalg.norm(trainX[i] - trainX[choice_idx])
 	return min(dist.iteritems(), key=operator.itemgetter(1))[0]
 

@@ -18,7 +18,6 @@ def run_neural_network(splits, neural_spec, learning_rate, momentum_rate):
 def train_neural(neural_net, trainX, trainY, validX, validY):
 	epoch_size = len(validX)
 
-	print(trainX, trainY)
 
 	for iteration in range(0, 20000):
 		random_idx = numpy.random.randint(0, len(trainX))
@@ -28,7 +27,7 @@ def train_neural(neural_net, trainX, trainY, validX, validY):
 		if iteration%epoch_size == 0:
 			mse = getMSE(neural_net, validX, validY)
 			print("MSE on Epoch %d : %f"%(iteration/epoch_size, mse))
-			if mse <= 0.0255:
+			if mse <= 0.05:
 				break
 	print("Terminating after %d  iterations "%(iteration+1))
 	return iteration+1, getMSE(neural_net, validX, validY)

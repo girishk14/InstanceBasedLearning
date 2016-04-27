@@ -23,13 +23,8 @@ def shuffle_order(a, b):
 def main():
 	
 	ip, op , metadata = preprocess.pre_process_stage1(sys.argv[1])
-
 	ip,op = shuffle_order(ip, op)
-
-
-
 	normalized_ip, normalized_op = preprocess.normalize(ip, op, metadata);
-
 
 	knn_ip, knn_op = preprocess.normalize(ip, op, metadata, hot_encode = True)
 	#neural_spec = [int(spec.strip()) for spec in sys.argv[2].split(",")]
@@ -38,39 +33,42 @@ def main():
 	neural_spec.insert(0, len(normalized_ip[0]))
 	learning_rate, momentum_rate = 0.10, 0.02# 0.001, 0.001
 
-	knn_accs, neural_accs, dtree_accs, mean_iter, mse  = [0]*10, [0]*10, [0]* 10, 0,0
+	knn_accs, comp_accs, mean_iter, mse  =  [0]*10, [0]* 10, 0,0
 
 		
 	if '--neural' in sys.argv:
-		neural_accs, mean_iter, mse = k_fold_validation_neural_net(normalized_ip, normalized_op, neural_spec, learning_rate, momentum_rate)
+		comp_accs = k_fold_validation_neural_net(normalized_ip, normalized_op, neural_spec, learning_rate, momentum_rate)
 	
 
 
-	if '--dtree' in sys.argv:
-		dtree_accs = k_fold_validation_dtree(ip, op, metadata)
+	elif '--dtree' in sys.argv:
+		comp_accs = k_fold_validation_dtree(ip, op, metadata)
 
 
 	k = int(sys.argv[2])
 
 	knn_accs = k_fold_validation_knn(knn_ip, numpy.array(op), k, metadata)
+
+	print(knn_accs)
 	
 
 	print("\n\n")
 	print("Dataset Size : %d"%(len(ip)))
-	print("Average Number of Iterations for Neural Network : %.3f"%(mean_iter))
-	print("Average of Mean Squared Error for Neural Network : %.2f"%(mse))
-	
-	print("\nFold\t\t\tkNN\t\t\tDecision Tree")
+	print("Number of features : %d"%len(ip[0]))
+
+
+
+	print("\nFold\t\t\tkNN\t\t\tDecision Tree/Neural Network")
 	for fold in range(0,10):
-			print( "%d \t\t\t %.2f \t\t\t %.2f"%(fold+1, knn_accs[fold], dtree_accs[fold]))
+			print( "%d \t\t\t %.2f \t\t\t %.2f"%(fold+1, knn_accs[fold], comp_accs[fold]))
 
-	dtree_mu, dtree_ci = statistics.calc_confidence_interval(dtree_accs)
-	neural_mu, neural_ci = statistics.calc_confidence_interval(knn_accs)
+	comp_mu, comp_ci = statistics.calc_confidence_interval(comp_accs)
+	knn_mu, knn_ci = statistics.calc_confidence_interval(knn_accs)
 
-	t_mu, t_ci = statistics.paired_t_test(dtree_accs, knn_accs)
+	t_mu, t_ci = statistics.paired_t_test(comp_accs, knn_accs)
 
-	print("\nConfidence interval for neural network : %.3f   +/-   %.3f"%(neural_mu, neural_ci))
-	print("Confidence interval for decison tree : %.3f   +/-   %.3f"%(dtree_mu, dtree_ci))
+	print("\nConfidence interval for kNN classifier : %.3f   +/-   %.3f"%(knn_mu, knn_ci))
+	print("Confidence interval for decison tree/neural network : %.3f   +/-   %.3f"%(comp_mu, comp_ci))
 
 
 	print("Result of Paired T-Test : %.3f   +/-   %.3f"%(t_mu, t_ci))
@@ -107,7 +105,8 @@ def k_fold_validation_neural_net(neural_ip, neural_op, neural_spec, learning_rat
 		accs.append(acc)
 		total_iterations+=iters
 		total_mse +=mse
-	return accs, total_iterations/10.0, total_mse/10.0
+	print("Accs", accs)
+	return accs
 
 
 def k_fold_validation_dtree(ip, op, metadata):
@@ -123,7 +122,7 @@ def k_fold_validation_dtree(ip, op, metadata):
 
 def downsample(trainX, trainY):
 	
-	sample_size = math.sqrt(len(trainX))#int(len(trainX))*0.2
+	sample_size = math.sqrt(len(trainX))*2#int(len(trainX))*0.2
 
 	a = numpy.random.choice(numpy.arange(0, len(trainX)), size = sample_size)
 	T_x = numpy.zeros((sample_size, len(trainX[0])))
@@ -147,7 +146,7 @@ def k_fold_validation_knn(knn_ip, knn_op, k, metadata):
 	for trainX, trainY,testX, testY in k_fold_generator(knn_ip.tolist(), knn_op.tolist(), 10):
 		print("Fold " + str(len(accs)+1))
 
-		if len(trainX[0]) > 25 and len(trainX)>500: #more than 25 features
+		if len(trainX[0]) > 100 and len(trainX)>500: #more than 25 features
 			print("Too much data, downsampling")
 			trainX, trainY = downsample(trainX, trainY)
 
@@ -155,7 +154,6 @@ def k_fold_validation_knn(knn_ip, knn_op, k, metadata):
 		splits = (numpy.array(trainX[0:t_size]), numpy.array(trainY[0:t_size]), numpy.array(trainX[t_size:]), numpy.array(trainY[t_size:]), numpy.array(testX), numpy.array(testY))
 		acc  =  knn_driver.run_knn(splits,k, sys.argv[3])
 		accs.append(acc)
-		sys.exit()
 	return accs
 
 
