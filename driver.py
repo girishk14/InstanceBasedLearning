@@ -5,6 +5,7 @@ import numpy
 import math
 import statistics
 import random
+import timeit
 import knn_driver
 
 sys.path.insert(0, 'decision_tree_comp/')
@@ -47,12 +48,15 @@ def main():
 
 	k = int(sys.argv[2])
 
+	tic = timeit.default_timer()
 	knn_accs = k_fold_validation_knn(knn_ip, numpy.array(op), k, metadata)
+	toc = timeit.default_timer()
 
-	print(knn_accs)
+
 	
 
 	print("\n\n")
+	print("Time Taken : %f"% (toc-tic))
 	print("Dataset Size : %d"%(len(ip)))
 	print("Number of features : %d"%len(ip[0]))
 
@@ -105,7 +109,6 @@ def k_fold_validation_neural_net(neural_ip, neural_op, neural_spec, learning_rat
 		accs.append(acc)
 		total_iterations+=iters
 		total_mse +=mse
-	print("Accs", accs)
 	return accs
 
 

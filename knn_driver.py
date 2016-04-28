@@ -32,7 +32,9 @@ def run_knn(splits, k, method):
 
 def run_knn_naive(splits, k):
 	(trainX,trainY, validX,validY, testX, testY) = splits
+	
 	correct = 0
+	print("Running Naive kNN")
 	for idx,query in enumerate(testX):
 		pred = classify_tuple_naive(query, trainX,trainY, k)
 		
@@ -66,9 +68,9 @@ def classify_tuple_naive(query, trainX, trainY, k):
 def run_knn_distance_weight(splits, k):
 	(trainX,trainY, validX,validY, testX, testY) = splits
 	correct = 0
+	print("Running Distance-Weighted kNN")
 	for idx,query in enumerate(testX):
 		pred = classify_tuple_naive(query, trainX,trainY, k)
-		
 		if testY[idx] == pred:
 			correct+=1
 	return (float(correct)/len(testX))
@@ -77,7 +79,6 @@ def run_knn_distance_weight(splits, k):
 
 def classify_tuple_distance(query, trainX, trainY, k):
 	dist = {}
-
 	for idx, tup in enumerate(trainX):
 		dist[idx]  = numpy.linalg.norm(tup - query)
 		if dist[idx] == 0 :  return trainY[idx]
@@ -100,14 +101,14 @@ def run_knn_KD(splits, k):
 	(trainX,trainY, validX,validY, testX, testY) = splits
 	correct = 0
 	KD = spatial.KDTree(trainX)
-	print("KDTREE Built")
+	print("Constructing kD-tree and running kNN using kD-tree")
 	for idx,query in enumerate(testX):
 		pred = classify_tuple_KDTree(KD, query, trainY, k)
 
 		if testY[idx] == pred:
 			correct+=1
 
-	print(float(correct)/len(testX))
+	#print(float(correct)/len(testX))
 	return (float(correct)/len(testX))
 
 
@@ -139,15 +140,12 @@ def run_knn_SVD(splits, k):
 	train_U, train_S, train_Vt = numpy.linalg.svd(trainX, full_matrices=False)
 	test_U, test_S, test_Vt = numpy.linalg.svd(numpy.concatenate((trainX, testX),axis=0), full_matrices=False)
 	dimensions = find_svd_dimensions((train_U, train_S, train_Vt))
-	print(dimensions)
-	print(train_U.shape, train_S.shape, train_Vt.shape)
-	
+	print("Number of Eigen Values used :  %d"%dimensions)
 	train_recon = numpy.dot(numpy.dot(train_U[:, :dimensions], numpy.diag(train_S[:dimensions])), train_Vt[:dimensions, :])
 
 	test_recon = numpy.dot(numpy.dot(test_U[:, :dimensions], numpy.diag(test_S[:dimensions])), test_Vt[:dimensions, :])
 
 	test_recon =  test_recon[len(trainX):]
-
 
 	if "--showplot" in sys.argv:
 		for eg in range(0, len(trainX)):
@@ -205,13 +203,13 @@ def run_knn_feature_selection(splits, k):
 		best_feature = max(acc_on_valid_set.iteritems(), key=operator.itemgetter(1))[0]
 		if acc_on_valid_set[best_feature] > prev_acc:
 			sel_set.add(best_feature);
-			print(sel_set)
 			features_left.remove(best_feature)
 			prev_acc = acc_on_valid_set[best_feature]
 
 		else:
 			break
 
+	print("Selected Features " , sel_set)
 	acc = classify_on_select_features(trainX, trainY, testX, testY, sel_set, k)
 	return acc
 
@@ -254,11 +252,9 @@ def run_knn_relief(splits, k):
 			weight_vector[feature] = weight_vector[feature] - (ex - hit_diff)**2  + (ex -  miss_diff)**2
 
 	weight_vector = [w/len(trainX) for w in weight_vector]
-
-
+	print(weight_vector)
 	correct = 0
 	trainX = trainX * numpy.array(weight_vector)
-	
 	for idx,query in enumerate(testX):
 		pred = classify_tuple_naive(query*weight_vector, trainX,trainY, k)
 		
@@ -273,8 +269,12 @@ def run_knn_relief(splits, k):
 def find_nearest_neighbour(trainX, trainY, choice_idx,  hit_or_miss):
 	dist = {}
 	for i,example in enumerate(trainX):
-		if  i!=choice_idx and ((trainY[choice_idx] == trainY[i])==hit_or_miss):
+		if  i!=choice_idx and ((trainY[choice_idx] == trainY[i]) is hit_or_miss):
 			dist[i] = numpy.linalg.norm(trainX[i] - trainX[choice_idx])
+
+	#print(trainY[choice_idx],hit_or_miss,len(dist.keys()))
+	if len(dist.keys()) == 0:		
+		return choice_idx
 	return min(dist.iteritems(), key=operator.itemgetter(1))[0]
 
 
