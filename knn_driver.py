@@ -135,7 +135,7 @@ def run_knn_SVD(splits, k):
 	correct = 0
 	trainX = numpy.concatenate((trainX, validX), axis=0)
 	trainY = numpy.concatenate((trainY, validY), axis =0)
-
+	print("Singular Value Decomposition")
 
 	train_U, train_S, train_Vt = numpy.linalg.svd(trainX, full_matrices=False)
 	test_U, test_S, test_Vt = numpy.linalg.svd(numpy.concatenate((trainX, testX),axis=0), full_matrices=False)
@@ -199,7 +199,7 @@ def run_knn_feature_selection(splits, k):
 
 			acc_on_valid_set[x] = classify_on_select_features(trainX, trainY, validX, validY, try_set, k)
 
-		print(acc_on_valid_set)
+		#print(acc_on_valid_set)
 		best_feature = max(acc_on_valid_set.iteritems(), key=operator.itemgetter(1))[0]
 		if acc_on_valid_set[best_feature] > prev_acc:
 			sel_set.add(best_feature);
@@ -236,8 +236,8 @@ def run_knn_relief(splits, k):
 	trainY = numpy.concatenate((trainY, validY))
 	weight_vector = [0] * len(trainX[0])
 
-	print(len(trainX))
-
+	print(len(trainX), len(testX))
+	
 	for i in range(0, len(trainX)):
 		idx = random.randint(0 , len(trainX)-1)
 		near_hit= find_nearest_neighbour(trainX, trainY, idx, True)

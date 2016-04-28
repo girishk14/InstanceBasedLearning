@@ -1,0 +1,34 @@
+{
+ "attr_types": [
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c", 
+  "c"
+ ], 
+ "sep": ";", 
+ "class_name": "Class", 
+ "class_position": 11, 
+ "location": [
+  "data/WineQuality/winequality.data"
+ ], 
+ "attr_names": [
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A", 
+  "N/A"
+ ]
+}

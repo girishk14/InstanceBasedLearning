@@ -95,10 +95,6 @@ python driver.py data/Arcene/control.json 5 Naive  --dtree         - Naive 5-NN 
 python driver.py data/Image/control.json 3 SVD  --neural   	   - 3-NN using SVD  V.S Neural Network  on Image
 
 
-Visualization for SVD
----------------------
-To see the two dimensional representation of data, you need to install matplotlib, and add the switch --showplot to the running command.
-
 Output
 -------
 The program reports the accuracies on each fold for the two algorithms, and finally the confidence interval, and score obtained from the paired-T test.

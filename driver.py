@@ -124,6 +124,7 @@ def k_fold_validation_dtree(ip, op, metadata):
 
 
 def downsample(trainX, trainY):
+	return trainX, trainY
 	
 	sample_size = math.sqrt(len(trainX))*2#int(len(trainX))*0.2
 
